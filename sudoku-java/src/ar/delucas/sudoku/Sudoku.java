@@ -6,6 +6,12 @@ import java.util.Map;
 
 import ar.delucas.sudoku.exceptions.MalformedSudokuException;
 
+/**
+ * Representa un tablero de Sudoku, y brinda la posibilidad de resolverlo.
+ * 
+ * @author Lucas Videla
+ *
+ */
 public class Sudoku {
 
 	private static final int TOTAL_CELLS = 81;
@@ -16,6 +22,19 @@ public class Sudoku {
 	private Map<Integer, Region> columns = new HashMap<Integer, Region>();
 	private Map<Integer, Region> boxes = new HashMap<Integer, Region>();
 
+	/**
+	 * Construye el tablero basándose en un string suministrado
+	 * <pre>String board = "00123456879..."</pre>
+	 * El tablero debe contener 81 caracteres, y estar conformado
+	 * exclusivamente por números.
+	 * <ul>
+	 *  <li><b>0</b> representa una celda vacía</li>
+	 *  <li><b>1..9</b> representa una celda tomada</li>
+	 * </ul>
+	 * 
+	 * @param stringBoard el tablero a informar
+	 * @throws MalformedSudokuException si no se suministra un tablero válido.
+	 */
 	public Sudoku(String stringBoard) {
 
 		if (stringBoard.length() != TOTAL_CELLS) {
@@ -28,28 +47,36 @@ public class Sudoku {
 		parseBoard(stringBoard);
 	}
 
+	/**
+	 * Intenta resolver el Sudoku.
+	 * @return <b>true</b> si pudo resolverlo
+	 */
 	public boolean solve() {
 		return solve(0, 0);
 	}
 
-	private boolean solve(int i, int j) {
-		if (i == 9) {
-			i = 0;
-			if (++j == 9) {
+	/**
+	 * Credito por la base del algoritmo de backtracking:
+	 * <pre>http://www.colloquial.com/games/sudoku/java_sudoku.html</pre> 
+	 */
+	private boolean solve(int row, int col) {
+		if (row == 9) {
+			row = 0;
+			if (++col == 9) {
 				return true;
 			}
 		}
-		if (this.board[i][j].hasValue()) {
-			return solve(i + 1, j);
+		if (this.board[row][col].hasValue()) {
+			return solve(row + 1, col);
 		}
 
-		for (int val : this.board[i][j].getPossibleValues()) {
-			this.board[i][j].value(val);
-			if (solve(i + 1, j)) {
+		for (int val : this.board[row][col].getPossibleValues()) {
+			this.board[row][col].value(val);
+			if (solve(row + 1, col)) {
 				return true;
 			}
 		}
-		this.board[i][j].removeValue();
+		this.board[row][col].removeValue();
 		return false;
 	}
 
@@ -58,29 +85,12 @@ public class Sudoku {
 				&& isSolved(this.boxes);
 	}
 
-	public boolean isSolved(Map<Integer, Region> map) {
+	private boolean isSolved(Map<Integer, Region> map) {
 		boolean result = true;
 		for (Integer key : map.keySet()) {
 			result = result && map.get(key).isSolved();
 		}
 		return result;
-	}
-
-	public String toString() {
-		StringBuffer buffer = new StringBuffer();
-		for (int i = 0; i < 9; i++) {
-			for (int j = 0; j < 9; j++) {
-				buffer.append(this.board[i][j].value());
-				if (j % 3 == 2) {
-					buffer.append(" ");
-				}
-			}
-			buffer.append("\n");
-			if (i % 3 == 2) {
-				buffer.append("\n");
-			}
-		}
-		return buffer.toString();
 	}
 
 	private void parseBoard(String stringBoard) {
@@ -94,32 +104,26 @@ public class Sudoku {
 	private void addToBoard(int row, int column, int value) {
 		Cell cell = new Cell(value);
 
-		Region rowRegion = this.rows.get(row + 1);
-		if (rowRegion == null) {
-			rowRegion = new Region();
-			this.rows.put(row + 1, rowRegion);
-		}
-		cell.setRow(rowRegion);
-		rowRegion.add(cell);
+		cell.setRow(attachToRegion(cell, this.rows, row + 1));
 
-		Region columnRegion = this.columns.get(column + 1);
-		if (columnRegion == null) {
-			columnRegion = new Region();
-			this.columns.put(column + 1, columnRegion);
-		}
-		cell.setColumn(columnRegion);
-		columnRegion.add(cell);
-
+		cell.setColumn(attachToRegion(cell, this.columns, column + 1));
+		
 		Integer box = calculateBox(row, column);
-		Region boxRegion = this.boxes.get(box);
-		if (boxRegion == null) {
-			boxRegion = new Region();
-			this.boxes.put(box, boxRegion);
-		}
-		cell.setBox(boxRegion);
-		boxRegion.add(cell);
-
+		cell.setBox(attachToRegion(cell, this.boxes, box));
+		
 		this.board[row][column] = cell;
+	}
+
+	private Region attachToRegion(Cell cell, Map<Integer, Region> regionMap, Integer index) {
+		Region region = regionMap.get(index);
+		
+		if (region == null) {
+			region = new Region();
+			regionMap.put(index, region);
+		}
+		region.add(cell);
+		
+		return region;
 	}
 
 	private Integer calculateBox(int row, int column) {
@@ -171,8 +175,8 @@ public class Sudoku {
 		String validDigits = "0123456789";
 
 		boolean isValid = true;
-		for (int i = 0; i < baseBoard.length() && isValid; i++) {
-			if (!validDigits.contains(charAt(baseBoard, i))) {
+		for (int index = 0; isValid && index < baseBoard.length(); index++) {
+			if (!validDigits.contains(charAt(baseBoard, index))) {
 				isValid = false;
 			}
 		}
@@ -183,6 +187,24 @@ public class Sudoku {
 		return new Character(baseBoard.charAt(i)).toString();
 	}
 
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < 9; i++) {
+			for (int j = 0; j < 9; j++) {
+				buffer.append(this.board[i][j].value());
+				if (j % 3 == 2) {
+					buffer.append(" ");
+				}
+			}
+			buffer.append("\n");
+			if (i % 3 == 2) {
+				buffer.append("\n");
+			}
+		}
+		return buffer.toString();
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
