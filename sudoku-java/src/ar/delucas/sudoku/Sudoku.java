@@ -1,17 +1,24 @@
 package ar.delucas.sudoku;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-import ar.delucas.sudoku.exceptions.CellOutOfRangeException;
 import ar.delucas.sudoku.exceptions.MalformedSudokuException;
 
 public class Sudoku {
 
+	private static final int TOTAL_CELLS = 81;
+
 	private Cell[][] board = new Cell[9][9];
+
+	private Map<Integer, Region> rows = new HashMap<Integer, Region>();
+	private Map<Integer, Region> columns = new HashMap<Integer, Region>();
+	private Map<Integer, Region> boxes = new HashMap<Integer, Region>();
 
 	public Sudoku(String stringBoard) {
 
-		if (stringBoard.length() != 81) {
+		if (stringBoard.length() != TOTAL_CELLS) {
 			throw new MalformedSudokuException();
 		}
 		if (!validBoardDigits(stringBoard)) {
@@ -19,7 +26,6 @@ public class Sudoku {
 		}
 
 		parseBoard(stringBoard);
-
 	}
 
 	public boolean solve() {
@@ -33,60 +39,31 @@ public class Sudoku {
 				return true;
 			}
 		}
-		if (this.board[i][j].value() != 0) {
+		if (this.board[i][j].hasValue()) {
 			return solve(i + 1, j);
 		}
 
-		for (int val = 1; val <= 9; val++) { // mejorar
-			if (legal(i, j, val)) {
-				this.board[i][j].value(val);
-				if (solve(i + 1, j)) {
-					return true;
-				}
+		for (int val : this.board[i][j].getPossibleValues()) {
+			this.board[i][j].value(val);
+			if (solve(i + 1, j)) {
+				return true;
 			}
 		}
-		this.board[i][j].value(0);
+		this.board[i][j].removeValue();
 		return false;
 	}
 
-	private boolean legal(int row, int column, int value) {
-		for (int tempRow = 0; tempRow < 9; tempRow++) {
-			if (this.board[tempRow][column].value() == value) {
-				return false;
-			}
-		}
-
-		for (int tempColumn = 0; tempColumn < 9; tempColumn++) {
-			if (this.board[row][tempColumn].value() == value) {
-				return false;
-			}
-		}
-
-		int tempRow = (row / 3) * 3;
-		int tempCol = (column / 3) * 3;
-
-		for (int offsetRow = 0; offsetRow < 3; offsetRow++) {
-			for (int offsetCol = 0; offsetCol < 3; offsetCol++) {
-				if (this.board[tempRow + offsetRow][tempCol + offsetCol]
-						.value() == value) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-
-	}
-
-	public Cell get(int i, int j) {
-		if (!(i >= 1 && i <= 9) || !(j >= 1 && j <= 9)) {
-			throw new CellOutOfRangeException();
-		}
-		return board[i - 1][j - 1];
-	}
-
 	public boolean isSolved() {
-		return checkRows() && checkColumns() && checkBoxes();
+		return isSolved(this.rows) && isSolved(this.columns)
+				&& isSolved(this.boxes);
+	}
+
+	public boolean isSolved(Map<Integer, Region> map) {
+		boolean result = true;
+		for (Integer key : map.keySet()) {
+			result = result && map.get(key).isSolved();
+		}
+		return result;
 	}
 
 	public String toString() {
@@ -106,71 +83,88 @@ public class Sudoku {
 		return buffer.toString();
 	}
 
-	private boolean checkRows() {
-		boolean check = true;
-		for (int i = 0; i < 9 && check; i++) {
-			boolean[] values = new boolean[9];
-			for (int j = 0; j < 9 && check; j++) {
-				if (board[i][j].value() != 0) {
-					values[board[i][j].value() - 1] = true;
-				} else {
-					check = false;
-				}
-			}
-			for (int j = 0; j < values.length; j++) {
-				check = check && values[j];
-			}
-		}
-		return check;
-	}
-
-	private boolean checkColumns() {
-		boolean check = true;
-		for (int i = 0; i < 9 && check; i++) {
-			boolean[] values = new boolean[9];
-			for (int j = 0; j < 9 && check; j++) {
-				if (board[i][j].value() != 0) {
-					values[board[j][i].value() - 1] = true;
-				} else {
-					check = false;
-				}
-			}
-			for (int j = 0; j < values.length; j++) {
-				check = check && values[j];
-			}
-		}
-		return check;
-	}
-
-	private boolean checkBoxes() {
-		boolean check = true;
-
-		for (int i = 0; i < 9 && check; i += 3) {
-			for (int j = 0; j < 9 && check; j += 3) {
-				boolean[] values = new boolean[9];
-				for (int offsetRow = 0; offsetRow < 3; offsetRow++) {
-					for (int offsetCol = 0; offsetCol < 3; offsetCol++) {
-						if (this.board[i + offsetRow][j + offsetCol].value() != 0) {
-							values[this.board[i + offsetRow][j + offsetCol]
-									.value() - 1] = true;
-						} else {
-							check = false;
-						}
-					}
-				}
-				for (int k = 0; k < values.length; k++) {
-					check = check && values[k];
-				}
-			}
-		}
-		return check;
-	}
-
 	private void parseBoard(String stringBoard) {
 		for (int i = 0; i < stringBoard.length(); i++) {
 			int value = Character.digit(stringBoard.charAt(i), 10);
-			board[i / 9][i % 9] = new Cell(value);
+
+			this.addToBoard(i / 9, i % 9, value);
 		}
+	}
+
+	private void addToBoard(int row, int column, int value) {
+		Cell cell = new Cell(value);
+
+		Region rowRegion = this.rows.get(row + 1);
+		if (rowRegion == null) {
+			rowRegion = new Region();
+			this.rows.put(row + 1, rowRegion);
+		}
+		cell.setRow(rowRegion);
+		rowRegion.add(cell);
+
+		Region columnRegion = this.columns.get(column + 1);
+		if (columnRegion == null) {
+			columnRegion = new Region();
+			this.columns.put(column + 1, columnRegion);
+		}
+		cell.setColumn(columnRegion);
+		columnRegion.add(cell);
+
+		Integer box = calculateBox(row, column);
+		Region boxRegion = this.boxes.get(box);
+		if (boxRegion == null) {
+			boxRegion = new Region();
+			this.boxes.put(box, boxRegion);
+		}
+		cell.setBox(boxRegion);
+		boxRegion.add(cell);
+
+		this.board[row][column] = cell;
+	}
+
+	private Integer calculateBox(int row, int column) {
+		int base = 0;
+		switch (row) {
+		case 0:
+		case 1:
+		case 2:
+			base = 0;
+			break;
+		case 3:
+		case 4:
+		case 5:
+			base = 1;
+			break;
+
+		case 6:
+		case 7:
+		case 8:
+			base = 2;
+			break;
+
+		}
+
+		int offset = 1;
+		switch (column) {
+		case 0:
+		case 1:
+		case 2:
+			offset = 1;
+			break;
+		case 3:
+		case 4:
+		case 5:
+			offset = 2;
+			break;
+
+		case 6:
+		case 7:
+		case 8:
+			offset = 3;
+			break;
+
+		}
+		return base * 3 + offset;
 	}
 
 	private boolean validBoardDigits(String baseBoard) {

@@ -1,13 +1,50 @@
 package ar.delucas.sudoku;
 
+import java.util.Set;
+
 public class Cell {
 
 	private int value;
-
+	private Region boxRegion;
+	private Region columnRegion;
+	private Region rowRegion;
+	
 	public Cell(int value) {
 		this.value = value;
 	}
+	
+	public boolean legal(int val) {
+		return getPossibleValues().contains(val);		
+	}
 
+	public Set<Integer> getPossibleValues() {
+		Set<Integer> possibleValues = this.rowRegion.getPossibleValues();
+		possibleValues.retainAll(columnRegion.getPossibleValues());
+		possibleValues.retainAll(boxRegion.getPossibleValues());
+		
+		return possibleValues;
+	}
+	
+	public void setRow(Region rowRegion) {
+		this.rowRegion = rowRegion;
+	}
+
+	public void setColumn(Region columnRegion) {
+		this.columnRegion = columnRegion;
+	}
+
+	public void setBox(Region boxRegion) {
+		this.boxRegion = boxRegion;
+	}
+
+	public boolean hasValue() {
+		return this.value != 0;
+	}
+	
+	public void removeValue() {
+		this.value = 0;
+	}
+	
 	public int value() {
 		return value;
 	}

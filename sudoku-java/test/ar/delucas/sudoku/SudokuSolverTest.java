@@ -32,9 +32,8 @@ public class SudokuSolverTest {
 	public void testSudokuNotCorrectlySolved(){
 		String board = "534678912672195348198342567859761423426853791713924856961537284278419635345286179";
 		Sudoku s = new Sudoku(board);
-		
+
 		Assert.assertFalse(s.isSolved());
-		
 	}
 
 }
