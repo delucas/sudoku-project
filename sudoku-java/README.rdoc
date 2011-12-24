@@ -9,3 +9,7 @@ La solución se pensó desde la representación de los objetos que mejor represe
 - Las Celdas, que contienen el valor
 - Las Regiones, que sirven para establecer las restricciones sobre las Celdas
 - El tablero (Sudoku), que engloba los componentes y sirve de principal elemento de interacción
+
+La programación es original, aunque el algoritmo se basó en los principios del suministrado por Bob Carpenter.
+
+Link: http://www.colloquial.com/games/sudoku/java_sudoku.html
