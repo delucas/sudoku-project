@@ -6,6 +6,6 @@ mismo no es satisfactorio, se vuelve un paso atrás. Así sucesivamente hasta en
 al problema.
 
 La solución se pensó desde la representación de los objetos que mejor representan el problema:
-Las Celdas, que contienen el valor
-Las Regiones, que sirven para establecer las restricciones sobre las Celdas
-El tablero (Sudoku), que engloba los componentes y sirve de principal elemento de interacción
+- Las Celdas, que contienen el valor
+- Las Regiones, que sirven para establecer las restricciones sobre las Celdas
+- El tablero (Sudoku), que engloba los componentes y sirve de principal elemento de interacción
