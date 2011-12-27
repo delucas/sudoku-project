@@ -1,3 +1,13 @@
+% Resolución de un Sudoku en Prolog
+% Se basa en una implementación simplificada extraída del
+% libro Seven Languages in Seven weeks, extendida para
+% llevarlo a un tablero convencional.
+%
+% Simplemente se definen las restricciones del problema,
+% como puede apreciarse.
+%
+% Autor: Lucas Videla
+
 valid([]).
 valid([Head|Tail]) :-
   fd_all_different(Head),
