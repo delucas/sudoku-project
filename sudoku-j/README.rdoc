@@ -1,0 +1,21 @@
+= Sudoku en J
+
+La solución implementada está tomada de http://www.jsoftware.com/jwiki/Essays/Sudoku,
+y funciona perfectamente.
+Estoy en proceso de comentar el código, pero tuve la posibilidad de contactar al autor
+del algoritmo que presento, Roger Hui, y hacerle una pequeña pregunta:
+¿por qué utilizar J para resolver el Sudoku? Aquí la respuesta:
+
+Thank you for letting me know of your project.  I am pleased that you find the Sudoku essay of use to you.
+
+Regarding "why J?", I refer you to the five important characteristics of notation that Ken Iverson listed in his Turing aware lecture :
+- Ease of Expressing Constructs Arising in Problems
+- Suggestivity
+- Subordination of Detail
+- Economy
+- Amenability to Formal Proofs
+Iverson was speaking in the context of APL, but the same ideas apply to J, only more so.
+
+Un honor tener la palabra de Roger Hui.
+
+Link: http://www.jsoftware.com/papers/tot.htm
