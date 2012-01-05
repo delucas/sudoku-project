@@ -1,0 +1,6 @@
+= Sudoku en Lisp
+
+La solución implementada está tomada de http://www.kernel-panic.it/software.html,
+y funciona perfectamente.
+He contactado con el autor, Daniele Mazzocchio, y obtuve su autorización para
+reproducir su código en este medio.
