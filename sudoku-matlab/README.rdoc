@@ -1,0 +1,5 @@
+= Sudoku en MATLAB
+
+La solución implementada está tomada de http://www.math.hu-berlin.de/~pevans/personal/sudoku/,
+y funciona perfectamente.
+Estoy en proceso de contactar al autor, Pete Evans, y revisar los comentarios de código.
